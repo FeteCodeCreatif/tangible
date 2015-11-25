@@ -2,11 +2,21 @@ body {
   font-family: "Open Sans", sans-serif;
 }
 
-.col-xs-6 img {
+.row {
+    text-align: center;
+}
+
+
+.col-xs-6 img{
     float: left;
     clear: none;
-    margin-right: 20px;
-    border-style: dashed;
+    margin-right: 10px;
+    border: 2px dashed #9d9d9d;
     width: 100px;
     height: 100px;
+}
+
+.col-xs-6 img.visiblecursor {
+    border: 2px solid #fff84a;
+    background-color: #fff84a;
 }
