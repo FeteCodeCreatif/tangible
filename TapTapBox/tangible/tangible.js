@@ -28,23 +28,16 @@ var commandList = {
 * Functions *
 *************/
 
-// curs2im transforms the edition index into the id of the image in the visual representation of the sequence in index.html
-  
-var curs2im = function(editCursor){
-  return '#im' + editCursor;
-};
-
-
 // executeCommand sends to livecodelab's editor the current command defined by the index execCursor
 
 var executeCommand = function() {
-      $('#im' + execCursor).removeClass("visiblecursor");
+      $('#im' + execCursor).removeClass("execcursor");
       execCursor = (execCursor + 1) % 8; // next step
 
       while (!commandSequence[execCursor]) { //skipping empty steps
         execCursor = (execCursor + 1) % 8;
       }
-      $('#im' + execCursor).addClass("visiblecursor");
+      $('#im' + execCursor).addClass("execcursor");
       top.frames[0].editor.setValue(commandSequence[execCursor]);
       top.frames[1].focus();
   };
@@ -59,9 +52,10 @@ var clearSequence = function(){
   $('#im6').attr('src','vide.png');
   $('#im7').attr('src','vide.png');
 
-  $('#im' + execCursor).removeClass("visiblecursor");
+  $('#im' + execCursor).removeClass("execcursor");
   commandSequence = [];
   editCursor = 0;
+  $('#im' + editCursor).addClass("editcursor");
   
   top.frames[0].editor.setValue(neutralCommand);
   top.frames[1].focus();
@@ -97,27 +91,29 @@ $(document).keyup(function(touche){
     editCursor = execCursor;
   }
 
-  var image = curs2im(editCursor);
+  var imageID = '#im' + editCursor;
 
   if(keyPressed == 37){ // si le code de la touche est égal à 37 (Gauche)
-    $(image).attr('src','bounce.png');
+    $(imageID).attr('src','bounce.png');
     commandSequence[editCursor] = commandList.bounce;
-    editCursor = (editCursor + 1) %8;
   }
   if(keyPressed == 38){ // si le code de la touche est égal à 38 (Haut)
-    $(image).attr('src','flip.png');
+    $(imageID).attr('src','flip.png');
     commandSequence[editCursor] = commandList.flip;
-    editCursor = (editCursor + 1) %8;
   }
   if(keyPressed == 39){ // si le code de la touche est égal à 39 (Droite)
-    $(image).attr('src','grow.png');
+    $(imageID).attr('src','grow.png');
     commandSequence[editCursor] = commandList.grow;
-    editCursor = (editCursor + 1) %8;
   }
   if(keyPressed == 40){ // si le code de la touche est égal à 40 (Bas)
-    $(image).attr('src','zoom.png');
+    $(imageID).attr('src','zoom.png');
     commandSequence[editCursor] = commandList.zoom;
-    editCursor = (editCursor + 1) %8;
+  }
+
+  if((keyPressed == 37 || keyPressed == 38 || keyPressed == 39 || keyPressed == 40) && !playLoop){
+    $('#im' + editCursor).removeClass("editcursor");
+    editCursor = (editCursor + 1) % 8;
+    $('#im' + editCursor).addClass("editcursor");
   }
   
   if(keyPressed == 71){ // si le code de la touche est égal à 71 (g)
@@ -125,11 +121,13 @@ $(document).keyup(function(touche){
   }
   if(keyPressed == 32){ // si le code de la touche est égal à 32 (Spacebar)
     if (commandSequence !== undefined && commandSequence.length !== 0 && !playLoop){
-      
+      $('#im' + editCursor).removeClass("editcursor");
+
       execCursor = 0; // first run
-      $('#im' + execCursor).addClass("visiblecursor");
+      $('#im' + execCursor).addClass("execcursor");
       top.frames[0].editor.setValue(commandSequence[execCursor]);
       top.frames[1].focus();
+
       playLoop = setInterval(executeCommand, 2000); // then with delay
     }
   }

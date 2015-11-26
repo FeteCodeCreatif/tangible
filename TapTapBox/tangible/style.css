@@ -15,10 +15,16 @@ body {
     border: 2px dashed #9d9d9d;
     width: 100px;
     height: 100px;
-    background-color: white;
+    background-color: #e8e8e8;
 }
 
-.col-xs-6 img.visiblecursor {
+.col-xs-6 img.execcursor {
     border: 2px solid #fff84a;
     background-color: #fff84a;
 }
+
+.col-xs-6 img.editcursor {
+    border: 2px solid white;
+    background-color: white;
+}
+
