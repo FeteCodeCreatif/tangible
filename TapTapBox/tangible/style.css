@@ -1,5 +1,6 @@
 body {
   font-family: "Open Sans", sans-serif;
+  background-color: black;
 }
 
 .row {
@@ -14,6 +15,7 @@ body {
     border: 2px dashed #9d9d9d;
     width: 100px;
     height: 100px;
+    background-color: white;
 }
 
 .col-xs-6 img.visiblecursor {
