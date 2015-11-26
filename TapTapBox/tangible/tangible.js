@@ -7,59 +7,49 @@
 /**************
 * Definitions *
 ***************/
-var commands = ["box"]; // The buffer of current commands
-var editCursor = 0;  // the index of the command to be edited next
-var execCursor = 0; // the index of the command currently executed
+var neutralCommand = "stroke grey \nstrokeSize (sin((frame\/10)%240\/8)*200)+199 \nbackground black \nrotate(0.3,1,0) \nwhite box";
+var commandSequence = []; // commands to execute
+var editCursor = 0;  // step in sequence to insert new commande
+var execCursor = 0; // step currently executed
+var playLoop = false;
 
 // Our list of available commands //
-var commandList = [
-  "rotate blue box",
-  "rotate white ball",
-  "rotate red ball",
-  "rotate move yellow box",
-  "move black box"
-];
+var commandList = {
+"bounce" : "stroke grey \nstrokeSize 5 background  black \nmove 0, (sin((frame\/8)%120\/2)*1), 0 \nrotate (sin((frame\/12)%120\/2)*2),(sin((frame\/10)%120\/2)*2),(sin((frame\/13)%120\/2)*2)  \nwhite box",
 
-var boucleExec = false; // to avoid an error on initialisation
+"flip": "stroke grey \nstrokeSize 5 background  black \nrotate(sin((frame/8)%240/6)*3)+2.99 move 0.5, 0.5, 0 white box",
 
+"grow" : "stroke grey \nstrokeSize 5 \nbackground  black \nscale sin(frame%240\/200)+1.1 \nrotate frame%480\/500 \nwhite box",
+
+"zoom" : "stroke grey \nstrokeSize 5 background black \nscale ((sin((frame/13)%240/3)*3)+2) \nrotate(0.3,1,(sin((frame/120)%240/3)*3)+2) \nwhite box"
+};
 
 /************
 * Functions *
 *************/
 
-// curs2im transforms the edition index into the id of the image in our visual
-//         buffer in index.html
+// curs2im transforms the edition index into the id of the image in the visual representation of the sequence in index.html
+  
 var curs2im = function(editCursor){
   return '#im' + editCursor;
 };
 
-// logBuffer logs the current state of our command buffer
-var logBuffer = function(){
-  console.log("Commands currently bufferized for execution : ");
-  console.log(commands);
-}
 
-// sendCommand sets the content of livecodelab's editor to the command in our
-//             command buffer at the index commandIndex
-var sendCommand = function(commandIndex){
-  top.frames[0].editor.setValue(commands[commandIndex]);
-}
+// executeCommand sends to livecodelab's editor the current command defined by the index execCursor
 
-// executeBuffer sends to livecodelab's editor the current command defined by
-//               the index execCursor and
-var executeBuffer = function(){
-  while (!commands[execCursor]){
-    execCursor = (execCursor+1)%8
-  }
-  sendCommand(execCursor);
-  execCursor = (execCursor+1)%8
-}
+var executeCommand = function() {
+      $('#im' + execCursor).removeClass("visiblecursor");
+      execCursor = (execCursor + 1) % 8; // next step
 
-var play = function(){
-  var boucleExec = setInterval(executeBuffer, 1000);
-}
+      while (!commandSequence[execCursor]) { //skipping empty steps
+        execCursor = (execCursor + 1) % 8;
+      }
+      $('#im' + execCursor).addClass("visiblecursor");
+      top.frames[0].editor.setValue(commandSequence[execCursor]);
+      top.frames[1].focus();
+  };
 
-var clearBuffer = function(){
+var clearSequence = function(){
   $('#im0').attr('src','vide.png');
   $('#im1').attr('src','vide.png');
   $('#im2').attr('src','vide.png');
@@ -68,58 +58,79 @@ var clearBuffer = function(){
   $('#im5').attr('src','vide.png');
   $('#im6').attr('src','vide.png');
   $('#im7').attr('src','vide.png');
+
+  $('#im' + execCursor).removeClass("visiblecursor");
+  commandSequence = [];
   editCursor = 0;
-  commands = ["box"];
-  executeBuffer();
-  if(boucleExec){
-    clearInterval(boucleExec);
-  }
+  
+  top.frames[0].editor.setValue(neutralCommand);
+  top.frames[1].focus();
+  
+  clearInterval(playLoop);
+  playLoop = false;
+
 };
 
 var initialisation = function(){
   if(top.frames[0].editor){
-    clearBuffer();
+    clearSequence();
+    $(top.frames[ "livecodelab" ].document).contents().find( ".menubar" ).css( "display", "none" );
+    $(top.frames[ "livecodelab" ].document).contents().find( "body" ).css( "background", "black" );
+    $(top.frames[ "livecodelab" ].document).contents().find( "#statsWidget" ).css( "display", "none" );
+    $(top.frames[ "livecodelab" ].document).contents().find( ".CodeMirror-lines" ).css("opacity","0.5");
+    top.frames[1].focus();
   }
   else{
     setTimeout(initialisation,100);
   }
-}
+};
 
 initialisation();
 
-$(document).keyup(function(touche){ // on écoute l'évènement keyup()
+// inserting a command in the buffer
 
-  var appui = touche.which || touche.keyCode; // le code est compatible tous navigateurs grâce à ces deux propriétés
+$(document).keyup(function(touche){
+
+  var keyPressed = touche.which || touche.keyCode;
+
+  if (playLoop){
+    editCursor = execCursor;
+  }
+
   var image = curs2im(editCursor);
 
-  if(appui == 37){ // si le code de la touche est égal à 37 (Gauche)
+  if(keyPressed == 37){ // si le code de la touche est égal à 37 (Gauche)
     $(image).attr('src','bounce.png');
-    commands[editCursor] = commandList[0];
-    logBuffer();
+    commandSequence[editCursor] = commandList.bounce;
     editCursor = (editCursor + 1) %8;
   }
-  if(appui == 38){ // si le code de la touche est égal à 38 (Haut)
+  if(keyPressed == 38){ // si le code de la touche est égal à 38 (Haut)
     $(image).attr('src','flip.png');
-    commands[editCursor] = commandList[1];
-    logBuffer();
+    commandSequence[editCursor] = commandList.flip;
     editCursor = (editCursor + 1) %8;
   }
-  if(appui == 39){ // si le code de la touche est égal à 39 (Droite)
+  if(keyPressed == 39){ // si le code de la touche est égal à 39 (Droite)
     $(image).attr('src','grow.png');
-    commands[editCursor] = commandList[2];
-    logBuffer();
+    commandSequence[editCursor] = commandList.grow;
     editCursor = (editCursor + 1) %8;
   }
-  if(appui == 40){ // si le code de la touche est égal à 40 (Bas)
+  if(keyPressed == 40){ // si le code de la touche est égal à 40 (Bas)
     $(image).attr('src','zoom.png');
-    commands[editCursor] = commandList[3];
-    logBuffer();
+    commandSequence[editCursor] = commandList.zoom;
     editCursor = (editCursor + 1) %8;
   }
-  if(appui == 71){ // si le code de la touche est égal à 71 (g)
-    clearBuffer();
+  
+  if(keyPressed == 71){ // si le code de la touche est égal à 71 (g)
+    clearSequence();
   }
-  if(appui == 32){ // si le code de la touche est égal à 32 (Entrée)
-    play();
+  if(keyPressed == 32){ // si le code de la touche est égal à 32 (Spacebar)
+    if (commandSequence !== undefined && commandSequence.length !== 0 && !playLoop){
+      
+      execCursor = 0; // first run
+      $('#im' + execCursor).addClass("visiblecursor");
+      top.frames[0].editor.setValue(commandSequence[execCursor]);
+      top.frames[1].focus();
+      playLoop = setInterval(executeCommand, 2000); // then with delay
+    }
   }
 });
