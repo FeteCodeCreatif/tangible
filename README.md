@@ -11,10 +11,13 @@ TapTapBox est une collaboration entre [Magic Makers](http://magicmakers.fr) (Rom
  - Barre d'espace pour lancer la séquence
 -  touche G pour remettre la séquence à zéro
 
-Pour plus de fun, branchez une MakeyMakey sur votre ordinateur, et construisez un plateau de commande tangible
+Pour plus de fun, **branchez une MakeyMakey** sur votre ordinateur, et construisez **un plateau de commande tangible** comme celui que nous avons imaginé :
+
+![taptapbox neutral](prototype-tangible.gif)
 
 ![taptapbox neutral](taptapbox-screen-neutral.png)
 ![taptapbox bounce](taptapbox-screen-bounce.png)![taptapbox grow](taptapbox-screen-grow.png)
+
 
 ### Comment ça marche ?
 
