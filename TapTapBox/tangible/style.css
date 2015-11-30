@@ -8,23 +8,49 @@ body {
 }
 
 
+.col-xs-6 div {
+  background-color: white;
+}
+
 .col-xs-6 img{
     float: left;
     clear: none;
     margin-right: 10px;
-    border: 2px dashed #9d9d9d;
+    border: 4px dashed #9d9d9d;
     width: 100px;
     height: 100px;
-    background-color: #e8e8e8;
+    background-color: #c1bcac;
 }
 
+
+
 .col-xs-6 img.execcursor {
-    border: 2px solid #fff84a;
-    background-color: #fff84a;
+    border: 4px solid yellow;
+    background-color: yellow;
+}
+
+.col-xs-6 img.yellow {
+    border-color: yellow;
+    background-color: yellow;
+}
+
+.col-xs-6 img.deeppink{
+    border-color: deeppink;
+    background-color: deeppink;
+}
+
+.col-xs-6 img.lime{
+    border-color: lime;
+    background-color: lime;
+}
+
+.col-xs-6 img.white {
+    border-color: white;
+    background-color: white;
 }
 
 .col-xs-6 img.editcursor {
-    border: 2px solid white;
+    border: 4px solid white;
     background-color: white;
-}
+    }
 

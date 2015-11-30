@@ -9,19 +9,28 @@
 ***************/
 var neutralCommand = "stroke grey \nstrokeSize (sin((frame\/10)%240\/8)*200)+199 \nbackground black \nrotate(0.3,1,0) \nwhite box";
 var commandSequence = []; // commands to execute
+var colorSequence = []; //  colors to use
 var editCursor = 0;  // step in sequence to insert new commande
 var execCursor = 0; // step currently executed
 var playLoop = false;
 
 // Our list of available commands //
+// colors : http://html-color-codes.info/color-names/
+var colorStyles = {
+  "yellow" : "stroke white \nstrokeSize 5 background black fill yellow\n",
+  "deeppink" : "stroke white \nstrokeSize 5 background black fill deeppink\n",
+  "lime" : "stroke white \nstrokeSize 5 background black fill lime\n",
+  "white" : "stroke grey \nstrokeSize 5 background black fill white\n"
+};
+
 var commandList = {
-"bounce" : "stroke grey \nstrokeSize 5 background  black \nmove 0, (sin((frame\/8)%120\/2)*1), 0 \nrotate (sin((frame\/12)%120\/2)*2),(sin((frame\/10)%120\/2)*2),(sin((frame\/13)%120\/2)*2)  \nwhite box",
+"bounce" : "move 0, (sin((frame\/8)%120\/2)*1), 0 \nrotate (sin((frame\/12)%120\/2)*2),(sin((frame\/10)%120\/2)*2),(sin((frame\/13)%120\/2)*2)  \nbox",
 
-"flip": "stroke grey \nstrokeSize 5 background  black \nrotate(sin((frame/8)%240/6)*3)+2.99 move 0.5, 0.5, 0 white box",
+"flip": "rotate(sin((frame/8)%240/6)*3)+2.99 move 0.5, 0.5, 0 box",
 
-"grow" : "stroke grey \nstrokeSize 5 \nbackground  black \nscale sin(frame%240\/200)+1.1 \nrotate frame%480\/500 \nwhite box",
+"grow" : "scale sin(frame%240\/200)+1.1 \nrotate frame%480\/500 \nbox",
 
-"zoom" : "stroke grey \nstrokeSize 5 background black \nscale ((sin((frame/13)%240/3)*3)+2) \nrotate(0.3,1,(sin((frame/120)%240/3)*3)+2) \nwhite box"
+"zoom" : "scale ((sin((frame/13)%240/3)*3)+2) \nrotate(0.3,1,(sin((frame/120)%240/3)*3)+2) \nbox"
 };
 
 /************
@@ -31,13 +40,14 @@ var commandList = {
 // executeCommand sends to livecodelab's editor the current command defined by the index execCursor
 
 var executeCommand = function() {
-      $('#im' + execCursor).removeClass("execcursor");
+      $('#im' + execCursor).removeClass();
       execCursor = (execCursor + 1) % 8; // next step
 
       while (!commandSequence[execCursor]) { //skipping empty steps
         execCursor = (execCursor + 1) % 8;
       }
       $('#im' + execCursor).addClass("execcursor");
+      $('#im' + execCursor).addClass(colorSequence[execCursor]);
       top.frames[0].editor.setValue(commandSequence[execCursor]);
       top.frames[1].focus();
   };
@@ -52,7 +62,7 @@ var clearSequence = function(){
   $('#im6').attr('src','vide.png');
   $('#im7').attr('src','vide.png');
 
-  $('#im' + execCursor).removeClass("execcursor");
+  $('#im' + execCursor).removeClass();
   commandSequence = [];
   editCursor = 0;
   $('#im' + editCursor).addClass("editcursor");
@@ -93,21 +103,25 @@ $(document).keyup(function(touche){
 
   var imageID = '#im' + editCursor;
 
-  if(keyPressed == 37){ // si le code de la touche est égal à 37 (Gauche)
+  if(keyPressed == 37){ // 37 is Left Arrow key
     $(imageID).attr('src','bounce.png');
-    commandSequence[editCursor] = commandList.bounce;
+    commandSequence[editCursor] = colorStyles.yellow+commandList.bounce;
+    colorSequence[editCursor] = "yellow";
   }
-  if(keyPressed == 38){ // si le code de la touche est égal à 38 (Haut)
+  if(keyPressed == 38){ // 38 is Up Arrow key
     $(imageID).attr('src','flip.png');
-    commandSequence[editCursor] = commandList.flip;
+    commandSequence[editCursor] = colorStyles.lime+commandList.flip;
+    colorSequence[editCursor] = "lime";
   }
-  if(keyPressed == 39){ // si le code de la touche est égal à 39 (Droite)
+  if(keyPressed == 39){ // 39 is Right Arrow key
     $(imageID).attr('src','grow.png');
-    commandSequence[editCursor] = commandList.grow;
+    commandSequence[editCursor] = colorStyles.deeppink+commandList.grow;
+        colorSequence[editCursor] = "deeppink";
   }
-  if(keyPressed == 40){ // si le code de la touche est égal à 40 (Bas)
+  if(keyPressed == 40){ // 40 is Down Arrow key
     $(imageID).attr('src','zoom.png');
-    commandSequence[editCursor] = commandList.zoom;
+    commandSequence[editCursor] = colorStyles.white+commandList.zoom;
+    colorSequence[editCursor] = "white";
   }
 
   if((keyPressed == 37 || keyPressed == 38 || keyPressed == 39 || keyPressed == 40) && !playLoop){
@@ -116,15 +130,17 @@ $(document).keyup(function(touche){
     $('#im' + editCursor).addClass("editcursor");
   }
   
-  if(keyPressed == 71){ // si le code de la touche est égal à 71 (g)
+  if(keyPressed == 71){ // 71 is G key
     clearSequence();
   }
-  if(keyPressed == 32){ // si le code de la touche est égal à 32 (Spacebar)
+  if(keyPressed == 32){ // 32 is Spacebar key
     if (commandSequence !== undefined && commandSequence.length !== 0 && !playLoop){
-      $('#im' + editCursor).removeClass("editcursor");
+      
+      $('#im' + editCursor).removeClass(); // clean edit position
 
       execCursor = 0; // first run
       $('#im' + execCursor).addClass("execcursor");
+      $('#im' + execCursor).addClass(colorSequence[execCursor]);
       top.frames[0].editor.setValue(commandSequence[execCursor]);
       top.frames[1].focus();
 
