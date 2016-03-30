@@ -54,3 +54,6 @@ body {
     background-color: white;
     }
 
+canvas {
+    position: absolute;
+}

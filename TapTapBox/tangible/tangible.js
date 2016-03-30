@@ -33,6 +33,104 @@ var commandList = {
 "zoom" : "scale ((sin((frame/13)%240/3)*3)+2) \nrotate(0.3,1,(sin((frame/120)%240/3)*3)+2) \nbox"
 };
 
+/***********
+* Tracking *
+************/
+
+startWebcam = function() {
+  
+    var canvas = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
+    var video = document.createElement('video');
+    var detector;
+  
+    try {
+      compatibility.getUserMedia({video: true}, function(stream) {
+        try {
+          video.src = compatibility.URL.createObjectURL(stream);
+        } catch (error) {
+          video.src = stream;
+        }
+        compatibility.requestAnimationFrame(play);
+      }, function (error) {
+        alert("WebRTC not available. Try https://");
+      });
+    } catch (error) {
+      alert(error);
+    }
+  
+    var fist_pos_old;
+    var angle = [0, 0];
+    
+    function play() {
+      compatibility.requestAnimationFrame(play);
+      if (video.paused) video.play();
+          
+          // Draw video overlay:
+      canvas.width = ~~(100 * video.videoWidth / video.videoHeight);
+      canvas.height = 100;
+      context.drawImage(video, 0, 0, canvas.clientWidth, canvas.clientHeight);
+      
+      if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
+      
+        // Prepare the detector once the video dimensions are known:
+              if (!detector) {
+              var width = ~~(140 * video.videoWidth / video.videoHeight);
+          var height = 140;
+              detector = new objectdetect.detector(width, height, 1.1, objectdetect.handfist);
+            }
+              
+  
+              // Perform the actual detection:
+        var coords = detector.detect(video, 1);
+        
+        if (coords[0]) {
+          var coord = coords[0];
+          
+          // Rescale coordinates from detector to video coordinate space:
+          coord[0] *= video.videoWidth / detector.canvas.width;
+          coord[1] *= video.videoHeight / detector.canvas.height;
+          coord[2] *= video.videoWidth / detector.canvas.width;
+          coord[3] *= video.videoHeight / detector.canvas.height;
+          
+          var fist_pos = [coord[0] + coord[2] / 2, coord[1] + coord[3] / 2];
+          
+          if (fist_pos_old) {
+            var dx = (fist_pos[0] - fist_pos_old[0]) / video.videoWidth,
+              dy = (fist_pos[1] - fist_pos_old[1]) / video.videoHeight;
+            
+            if (dx*dx + dy*dy < 0.2) {
+              angle[0] += 5.0 * dx;
+              angle[1] += 5.0 * dy;
+            }
+            fist_pos_old = fist_pos;
+          } else if (coord[4] > 2) {
+            fist_pos_old = fist_pos;
+          }
+      
+  
+          // Draw coordinates on video overlay:
+          context.beginPath();
+          context.lineWidth = '2';
+          context.fillStyle = fist_pos_old ? 'rgba(0, 255, 255, 0.5)' : 'rgba(255, 0, 0, 0.5)';
+          context.fillRect(
+            coord[0] / video.videoWidth * canvas.clientWidth,
+            coord[1] / video.videoHeight * canvas.clientHeight,
+            coord[2] / video.videoWidth * canvas.clientWidth,
+            coord[3] / video.videoHeight * canvas.clientHeight);
+          context.stroke();
+
+          if (fist_pos_old) { // if the detection is steady
+          var imageID = '#im' + editCursor;
+          $(imageID).attr('src', 'bounce.png');
+          commandSequence[editCursor] = colorStyles.yellow + commandList.bounce;
+          colorSequence[editCursor] = "yellow";
+        }
+        } else fist_pos_old = null;
+      }
+    }
+  };
+
 /************
 * Functions *
 *************/
@@ -83,6 +181,8 @@ var initialisation = function(){
     $(top.frames[ "livecodelab" ].document).contents().find( "#statsWidget" ).css( "display", "none" );
     $(top.frames[ "livecodelab" ].document).contents().find( ".CodeMirror-lines" ).css("opacity","0.5");
     top.frames[1].focus();
+
+    startWebcam();
   }
   else{
     setTimeout(initialisation,100);
@@ -90,6 +190,7 @@ var initialisation = function(){
 };
 
 initialisation();
+
 
 // inserting a command in the buffer
 
