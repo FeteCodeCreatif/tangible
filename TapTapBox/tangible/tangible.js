@@ -125,6 +125,10 @@ startWebcam = function() {
           $(imageID).attr('src', 'bounce.png');
           commandSequence[editCursor] = colorStyles.yellow + commandList.bounce;
           colorSequence[editCursor] = "yellow";
+
+          $('#im' + editCursor).removeClass("editcursor");
+          editCursor = (editCursor + 1) % 8;
+          $('#im' + editCursor).addClass("editcursor");
         }
         } else fist_pos_old = null;
       }
