@@ -59,7 +59,8 @@ startWebcam = function() {
       alert(error);
     }
   
-    var fist_pos_old;
+    var symbolPositionPrevious;
+    var commandAlreadyAdded;
     var angle = [0, 0];
     
     function play() {
@@ -81,11 +82,11 @@ startWebcam = function() {
             }
               
   
-              // Perform the actual detection:
-        var coords = detector.detect(video, 1);
+              // Perform the actual detection. Multiple object give multiple coordinates.
+        var allCoords = detector.detect(video, 1);
         
-        if (coords[0]) {
-          var coord = coords[0];
+        if (allCoords[0]) {
+          var coord = allCoords[0];
           
           // Rescale coordinates from detector to video coordinate space:
           coord[0] *= video.videoWidth / detector.canvas.width;
@@ -93,26 +94,26 @@ startWebcam = function() {
           coord[2] *= video.videoWidth / detector.canvas.width;
           coord[3] *= video.videoHeight / detector.canvas.height;
           
-          var fist_pos = [coord[0] + coord[2] / 2, coord[1] + coord[3] / 2];
+          var symbolPosition = [coord[0] + coord[2] / 2, coord[1] + coord[3] / 2];
           
-          if (fist_pos_old) {
-            var dx = (fist_pos[0] - fist_pos_old[0]) / video.videoWidth,
-              dy = (fist_pos[1] - fist_pos_old[1]) / video.videoHeight;
+          if (symbolPositionPrevious) {
+            var dx = (symbolPosition[0] - symbolPositionPrevious[0]) / video.videoWidth,
+              dy = (symbolPosition[1] - symbolPositionPrevious[1]) / video.videoHeight;
             
             if (dx*dx + dy*dy < 0.2) {
               angle[0] += 5.0 * dx;
               angle[1] += 5.0 * dy;
             }
-            fist_pos_old = fist_pos;
+            symbolPositionPrevious = symbolPosition;
           } else if (coord[4] > 2) {
-            fist_pos_old = fist_pos;
+            symbolPositionPrevious = symbolPosition;
           }
       
   
           // Draw coordinates on video overlay:
           context.beginPath();
           context.lineWidth = '2';
-          context.fillStyle = fist_pos_old ? 'rgba(0, 255, 255, 0.5)' : 'rgba(255, 0, 0, 0.5)';
+          context.fillStyle = symbolPositionPrevious ? 'rgba(0, 255, 255, 0.5)' : 'rgba(255, 0, 0, 0.5)';
           context.fillRect(
             coord[0] / video.videoWidth * canvas.clientWidth,
             coord[1] / video.videoHeight * canvas.clientHeight,
@@ -120,7 +121,7 @@ startWebcam = function() {
             coord[3] / video.videoHeight * canvas.clientHeight);
           context.stroke();
 
-          if (fist_pos_old) { // if the detection is steady
+          if (symbolPositionPrevious && !commandAlreadyAdded) { // if the detection is steady
           var imageID = '#im' + editCursor;
           $(imageID).attr('src', 'bounce.png');
           commandSequence[editCursor] = colorStyles.yellow + commandList.bounce;
@@ -129,8 +130,13 @@ startWebcam = function() {
           $('#im' + editCursor).removeClass("editcursor");
           editCursor = (editCursor + 1) % 8;
           $('#im' + editCursor).addClass("editcursor");
+
+          commandAlreadyAdded = true;
         }
-        } else fist_pos_old = null;
+        } else {
+          symbolPositionPrevious = null;
+          commandAlreadyAdded = false;
+        }
       }
     }
   };
